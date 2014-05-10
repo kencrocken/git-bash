@@ -102,11 +102,11 @@ function color_branch() {
 }
 
 function parse_git_branch() {
-    git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/[\1$(git_dirty)]/"    
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/"    
 }
 
 #prompt
-export PS1="$IBlack$date @ $time12a $newLine$ICyan\u $Yellow$pathFull$IWhite\$(color_branch)\$(parse_git_branch)$IWhite $ "
+export PS1="$IBlack$date @ $time12a $newLine$ICyan\u $Yellow$pathFull$IWhite\$(parse_git_branch)$IWhite $ "
 # sets colors for background
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
