@@ -4,6 +4,8 @@
 #  SETUP CONSTANTS
 #  Bunch-o-predefined colors.  Makes reading code easier than escape sequences.
 #  I don't remember where I found this.  o_O
+# --- I changed the format of the variables to allow for use in 
+# --- the color_branch function. (KEC)
 
 # Reset
 Color_Off="\033[0m"       # Text Reset
@@ -86,31 +88,38 @@ pathFull="\w"
 pathshort="\W"
 newLine="\n"
 
-function git_dirty() {
-[[ $(git status --porcelain 2> /dev/null) != "" ]] && echo "*"
-}
+# --- Will add an asterisk to the end of the branch name if dirty
+# --- uncomment the function then add $(git_dirty) to parse_git_branch
+# --- for example ... -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/" 
+# function git_dirty() {
+# [[ $(git status --porcelain 2> /dev/null) != "" ]] && echo "*"
+# }
 
+# --- Changes the color of the branch name in the prompt depending on whether 
+# --- git is dirty or clean
 function color_branch() {
   local git_status="$(git status --porcelain 2> /dev/null)"
 
   if [[ $git_status != "" ]]; then
-    echo -ne $IRed
+    echo -ne $IRed #Color for a dirty git
 
   else 
-    echo -ne $IWhite
+    echo -ne $IWhite #Color for a clean git
  fi 
 }
 
+# --- Adds the branch to the prompt, this is where you should add git_dirty or color_branch
+# --- for example ... -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/" 
 function parse_git_branch() {
-    git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/"    
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/$(color_branch)[\1]/"    
 }
 
-#prompt
+# --- prompt
 export PS1="$IBlack$date @ $time12a $newLine$ICyan\u $Yellow$pathFull$IWhite\$(parse_git_branch)$IWhite $ "
-# sets colors for background
+# --- sets colors for background
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
-#allows for color in ls, and add slash to file list
+# --- allows for color in ls, and add slash to file list
 alias ls='ls -GFh'
 
 export PATH="$HOME/.rbenv/bin:$PATH"
