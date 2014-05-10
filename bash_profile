@@ -91,9 +91,9 @@ newLine="\n"
 # --- Will add an asterisk to the end of the branch name if dirty
 # --- uncomment the function then add $(git_dirty) to parse_git_branch
 # --- for example ... -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/" 
-# function git_dirty() {
-# [[ $(git status --porcelain 2> /dev/null) != "" ]] && echo "*"
-# }
+function git_dirty() {
+[[ $(git status --porcelain 2> /dev/null) != "" ]] && echo "*"
+}
 
 # --- Changes the color of the branch name in the prompt depending on whether 
 # --- git is dirty or clean
@@ -111,7 +111,7 @@ function color_branch() {
 # --- Adds the branch to the prompt, this is where you should add git_dirty or color_branch
 # --- for example ... -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/" 
 function parse_git_branch() {
-    git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/$(color_branch)[\1]/"    
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/" 
 }
 
 # --- prompt
