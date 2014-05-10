@@ -90,34 +90,23 @@ function git_dirty() {
 [[ $(git status --porcelain 2> /dev/null) != "" ]] && echo "*"
 }
 
+function color_branch() {
+  local git_status="$(git status --porcelain 2> /dev/null)"
+
+  if [[ $git_status != "" ]]; then
+    echo -ne "\033[0;91m"
+
+  else 
+    echo -ne "\033[0;97m"
+ fi 
+}
+
 function parse_git_branch() {
     git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/[\1$(git_dirty)]/"    
 }
 
-# function color_branch() {
-#   local git_status="$(git status --porcelain 2> /dev/null)"
-
-#   if [[ ! $git_status =~ "" ]]; then
-#     echo -e "$IRed"
-
-#   else 
-#     echo -e "$IGreen"
-#  fi 
-# }
-
-# function git_branch {
-#   local git_status="$(git status 2> /dev/null)"
-#   local pattern="^On branch ([^${IFS}]*)"
-
-#   if [[ $git_status =~ $pattern ]]; then
-#     local branch=${BASH_REMATCH[1]}
-#     echo "($branch)"
-#   fi
-# }
-
-
 #prompt
-export PS1="$IBlack$date @ $time12a $newLine$ICyan\u $Yellow$pathFull$IWhite\$(parse_git_branch)$IWhite $ "
+export PS1="$IBlack$date @ $time12a $newLine$ICyan\u $Yellow$pathFull$IWhite\$(color_branch)\$(parse_git_branch)$IWhite $ "
 # sets colors for background
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
