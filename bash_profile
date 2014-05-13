@@ -115,7 +115,7 @@ function parse_git_branch() {
 }
 
 # --- prompt
-export PS1="$IBlack$date @ $time12a $newLine$ICyan\u $Yellow$pathFull$IWhite\$(parse_git_branch)$IWhite $ "
+export PS1="\[$IBlack\]$date @ $time12a $newLine\[$ICyan\]\u \[$Yellow\]$pathFull\[$IWhite\]\$(parse_git_branch)\[$IWhite\] $ "
 # --- sets colors for background
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
