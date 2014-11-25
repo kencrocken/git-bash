@@ -92,7 +92,7 @@ newLine="\n"
 # --- uncomment the function then add $(git_dirty) to parse_git_branch
 # --- for example ... -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/" 
 function git_dirty() {
-[[ $(git status --porcelain 2> /dev/null) != "" ]] && echo "*"
+[[ $(git status --porcelain 2> /dev/null) != "" ]] && echo "‼"
 }
 
 # --- Changes the color of the branch name in the prompt depending on whether 
@@ -101,24 +101,49 @@ function color_branch() {
   local git_status="$(git status --porcelain 2> /dev/null)"
 
   if [[ $git_status != "" ]]; then
-    echo -ne $IRed #Color for a dirty git
+    echo -ne "$IRed" #Color for a dirty git
 
   else 
-    echo -ne $IWhite #Color for a clean git
+    echo -ne "$IGreen" #Color for a clean git
  fi 
 }
-
+function reset(){
+  echo -ne "$IWhite"
+}
 # --- Adds the branch to the prompt, this is where you should add git_dirty or color_branch
 # --- for example ... -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/" 
 function parse_git_branch() {
-    git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/" 
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ [$(color_branch)\1$(git_dirty)$(reset)]/"  
 }
 
+export PKG_CONFIG_PATH="/opt/X11/lib/pkgconfig"
+
 # --- prompt
-export PS1="\[$IBlack\]$date @ $time12a $newLine\[$ICyan\]\u \[$Yellow\]$pathFull\[$IWhite\]\$(parse_git_branch)\[$IWhite\] $ "
+export PS1="$newLine\[$IBlack\]$date | $time12a \[$newLine\]\[\033[38;5;24m\]\u \[\033[38;5;208m\]$pathFull\[$IWhite\]\$(parse_git_branch)\[$Color_Off\]$newLine\$ "
+export PS2="=> "
 # --- sets colors for background
 export CLICOLOR=1
-export LSCOLORS=ExFxBxDxCxegedabagacad
+export LSCOLORS=gxfxcxdxbxegedabagacad
+# ExFxBxDxCxegedabagacad
 # --- allows for color in ls, and add slash to file list
 alias ls='ls -GFh'
 
+# --- a more meaningful history
+alias gl='git log --all --decorate --graph --oneline'
+
+function live_git_log(){
+while :
+do
+    clear
+    git --no-pager log --graph --pretty=oneline --abbrev-commit --decorate --all $*
+    sleep 1
+done
+}
+
+alias gitlive=live_git_log
+
+export PATH="$HOME/.rbenv/bin:$PATH"
+eval "$(rbenv init -)"
+
+### Added by the Heroku Toolbelt
+export PATH="/usr/local/heroku/bin:$PATH"
