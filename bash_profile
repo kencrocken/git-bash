@@ -4,7 +4,7 @@
 #  SETUP CONSTANTS
 #  Bunch-o-predefined colors.  Makes reading code easier than escape sequences.
 #  I don't remember where I found this.  o_O
-# --- I changed the format of the variables to allow for use in 
+# --- I changed the format of the variables to allow for use in
 # --- the color_branch function. (KEC)
 
 # Reset
@@ -43,7 +43,7 @@ UWhite="\033[4;37m"       # White
 # Background
 On_Black="\033[40m"       # Black
 On_Red="\033[41m"         # Red
-On_Green="\033\033[42m"       # Green
+On_Green="\033\033[42m"   # Green
 On_Yellow="\033[43m"      # Yellow
 On_Blue="\033[44m"        # Blue
 On_Purple="\033[45m"      # Purple
@@ -90,60 +90,66 @@ newLine="\n"
 
 # --- Will add an asterisk to the end of the branch name if dirty
 # --- uncomment the function then add $(git_dirty) to parse_git_branch
-# --- for example ... -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/" 
+# --- for example ... -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/"
 function git_dirty() {
-[[ $(git status --porcelain 2> /dev/null) != "" ]] && echo "‼"
+
+    status=`git status 2>&1 | tee`
+    dirty=`echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
+    untracked=`echo -n "${status}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
+    ahead=`echo -n "${status}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
+    newfile=`echo -n "${status}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
+    renamed=`echo -n "${status}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
+    deleted=`echo -n "${status}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
+    bits=''
+    if [ "${renamed}" == "0" ]; then
+        bits=" ✏️ ${bits}"
+    fi
+    if [ "${ahead}" == "0" ]; then
+        bits=" ✨ ${bits}"
+    fi
+    if [ "${newfile}" == "0" ]; then
+        bits=" 🐣 ${bits}"
+    fi
+    if [ "${untracked}" == "0" ]; then
+        bits=" 🔦 ${bits}"
+    fi
+    if [ "${deleted}" == "0" ]; then
+        bits=" ⛔️ ${bits}"
+    fi
+    if [ "${dirty}" == "0" ]; then
+        bits=" 💀 ${bits}"
+    fi
+    if [ ! "${bits}" == "" ]; then
+        echo "${bits}"
+    else
+        echo " 🐼 "
+    fi
 }
 
-# --- Changes the color of the branch name in the prompt depending on whether 
+# --- Changes the color of the branch name in the prompt depending on whether
 # --- git is dirty or clean
 function color_branch() {
   local git_status="$(git status --porcelain 2> /dev/null)"
 
   if [[ $git_status != "" ]]; then
-    echo -ne "$IRed" #Color for a dirty git
+    echo -ne "$BIRed" #Color for a dirty git
 
-  else 
-    echo -ne "$IGreen" #Color for a clean git
- fi 
+  else
+    echo -ne "$BIGreen" #Color for a clean git
+ fi
 }
+
 function reset(){
   echo -ne "$IWhite"
 }
-# --- Adds the branch to the prompt, this is where you should add git_dirty or color_branch
-# --- for example ... -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/" 
-function parse_git_branch() {
-    git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ [$(color_branch)\1$(git_dirty)$(reset)]/"  
-}
 
-export PKG_CONFIG_PATH="/opt/X11/lib/pkgconfig"
+# --- Adds the branch to the prompt, this is where you should add git_dirty or color_branch
+# --- for example ... -e "s/* \(.*\)/$(color_branch)[\1$(git_dirty)]/"
+function parse_git_branch() {
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ [$(color_branch)\1$(reset)]$(git_dirty)/"
+}
 
 # --- prompt
-export PS1="$newLine\[$IBlack\]$date | $time12a \[$newLine\]\[\033[38;5;24m\]\u \[\033[38;5;208m\]$pathFull\[$IWhite\]\$(parse_git_branch)\[$Color_Off\]$newLine\$ "
+# export PS1="$newLine\[$IBlack\]$date | $time12a \[$newLine\]\[\033[38;5;24m\]\u \[\033[38;5;208m\]$pathFull\[$IWhite\]$(parse_git_branch)\[$Color_Off\]$newLine\$ "
+export PS1="\n\[$IBlack\]$date | $time12a\n\[\033[38;5;24m\]\u \[\033[38;5;208m\]\w\[$IWhite\]\$(parse_git_branch)\[$Color_Off\]\n🚀  "
 export PS2="=> "
-# --- sets colors for background
-export CLICOLOR=1
-export LSCOLORS=gxfxcxdxbxegedabagacad
-# ExFxBxDxCxegedabagacad
-# --- allows for color in ls, and add slash to file list
-alias ls='ls -GFh'
-
-# --- a more meaningful history
-alias gl='git log --all --decorate --graph --oneline'
-
-function live_git_log(){
-while :
-do
-    clear
-    git --no-pager log --graph --pretty=oneline --abbrev-commit --decorate --all $*
-    sleep 1
-done
-}
-
-alias gitlive=live_git_log
-
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
-
-### Added by the Heroku Toolbelt
-export PATH="/usr/local/heroku/bin:$PATH"
